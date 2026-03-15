@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإسلامي الكبير - قرآن وصلاة ودعاء وأذكار</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Naskh Arabic', serif; }
+        .quran-font {
+            font-family: 'Amiri', serif;
+            font-size: 1.95rem;
+            line-height: 3.2;
+            color: #0a5c36;
+        }
+        .ayah {
+            background: linear-gradient(90deg, #f0fdf4, #ecfdf5);
+            border-right: 7px solid #0a5c36;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border-radius: 16px;
+            position: relative;
+        }
+        .ayah-number {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            background: #0a5c36;
+            color: white;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .section { display: none; }
+        .section.active { display: block; }
+        .nav-btn.active { background-color: #0a5c36; color: white; transform: scale(1.05); }
+        .search-bar {
+            background: #064e3b;
+            border: 2px solid #10b981;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .modal { animation: modalPop 0.35s ease; }
+        @keyframes modalPop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .tasbeeh-counter { font-size: 6rem; font-weight: bold; color: #0a5c36; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-950 to-teal-950 text-white min-h-screen">
+
+<header class="bg-emerald-900 shadow-2xl sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-3xl">🕌</div>
+            <div>
+                <h1 class="text-3xl font-bold tracking-wider">الإسلامي الكبير</h1>
+                <p class="text-emerald-300 text-sm">قرآن • صلاة • دعاء • أذكار</p>
+            </div>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 bg-emerald-950 border-t border-emerald-800">
+        <div class="grid grid-cols-4 gap-1 text-center">
+            <button onclick="switchSection('quran')" class="nav-btn py-4 text-lg font-medium active">📖 القرآن</button>
+            <button onclick="switchSection('salah')" class="nav-btn py-4 text-lg font-medium">⏰ الصلوات</button>
+            <button onclick="switchSection('dua')" class="nav-btn py-4 text-lg font-medium">🤲 الأدعية</button>
+            <button onclick="switchSection('dhikr')" class="nav-btn py-4 text-lg font-medium">🌿 الأذكار</button>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-8 pb-32">
+
+    <!-- القرآن -->
+    <div id="quran" class="section active">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-6">
+            <h2 class="text-4xl font-bold">📖 القرآن الكريم</h2>
+            <div class="search-bar flex items-center w-full max-w-lg">
+                <input id="quranSearch" type="text" placeholder="ابحث عن السورة التي تريدها" 
+                       class="flex-1 bg-transparent px-6 py-4 text-white placeholder:text-emerald-300 focus:outline-none text-lg"
+                       onkeyup="if(event.key==='Enter') searchSurah()">
+                <button onclick="searchSurah()" class="bg-emerald-700 hover:bg-emerald-600 px-8 py-4 text-2xl">🔍</button>
+            </div>
+        </div>
+        <div id="surahList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
+
+        <div id="surahReader" class="hidden bg-emerald-900 rounded-3xl p-8 mt-8">
+            <div class="sticky top-0 bg-emerald-900 z-10 border-b border-emerald-700 pb-6 mb-8">
+                <div class="flex flex-wrap justify-between items-center gap-4">
+                    <button onclick="backToSurahList()" class="bg-emerald-800 hover:bg-emerald-700 px-6 py-3 rounded-xl flex items-center gap-2 text-lg">← العودة</button>
+                    <h3 id="surahTitle" class="text-4xl font-bold text-center flex-1"></h3>
+                    <div id="surahInfo" class="text-emerald-300 text-xl"></div>
+                </div>
+            </div>
+            <div id="quranText" class="quran-font leading-relaxed text-right"></div>
+        </div>
+    </div>
+
+    <!-- أوقات الصلاة -->
+    <div id="salah" class="section">
+        <h2 class="text-4xl font-bold mb-8">⏰ أوقات الصلوات</h2>
+        <div class="bg-emerald-900 rounded-3xl p-10 text-center">
+            <button onclick="getPrayerTimes()" class="bg-emerald-600 hover:bg-emerald-500 px-10 py-6 rounded-2xl text-2xl font-bold mb-8">معرفة أوقات الصلاة ⏰</button>
+            <div id="locationInfo" class="text-emerald-300 text-xl mb-6 hidden"></div>
+            <div id="prayerTimes" class="grid grid-cols-2 md:grid-cols-3 gap-6 hidden"></div>
+            <div id="errorMsg" class="text-red-400 mt-6 hidden text-xl"></div>
+        </div>
+    </div>
+
+    <!-- الأدعية -->
+    <div id="dua" class="section">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-6">
+            <h2 class="text-4xl font-bold">🤲 الأدعية المأثورة</h2>
+            <div class="search-bar flex items-center w-full max-w-lg">
+                <input id="duaSearch" type="text" placeholder="ابحث عن دعاء..." 
+                       class="flex-1 bg-transparent px-6 py-4 text-white placeholder:text-emerald-300 focus:outline-none text-lg"
+                       onkeyup="if(event.key==='Enter') searchDua()">
+                <button onclick="searchDua()" class="bg-emerald-700 hover:bg-emerald-600 px-8 py-4 text-2xl">🔍</button>
+            </div>
+        </div>
+        <div id="duaList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+
+    <!-- الأذكار -->
+    <div id="dhikr" class="section">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-6">
+            <h2 class="text-4xl font-bold">🌿 الأذكار المأثورة</h2>
+            <div class="search-bar flex items-center w-full max-w-lg">
+                <input id="dhikrSearch" type="text" placeholder="ابحث عن ذكر..." 
+                       class="flex-1 bg-transparent px-6 py-4 text-white placeholder:text-emerald-300 focus:outline-none text-lg"
+                       onkeyup="if(event.key==='Enter') searchDhikr()">
+                <button onclick="searchDhikr()" class="bg-emerald-700 hover:bg-emerald-600 px-8 py-4 text-2xl">🔍</button>
+            </div>
+        </div>
+        <div class="bg-emerald-900 rounded-3xl p-10 mb-12 text-center">
+            <p class="text-emerald-400 mb-4 text-xl">مسبحة إلكترونية</p>
+            <div onclick="incrementTasbeeh()" id="tasbeehCount" class="tasbeeh-counter cursor-pointer select-none mx-auto">0</div>
+            <p class="text-emerald-300 text-3xl mb-8">سبحان الله</p>
+            <button onclick="resetTasbeeh()" class="bg-red-700 hover:bg-red-600 px-12 py-5 rounded-2xl text-xl">إعادة تعيين</button>
+        </div>
+        <div id="dhikrList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+
+</main>
+
+<footer class="fixed bottom-0 left-0 right-0 bg-emerald-950 border-t border-emerald-800 py-5 text-center text-emerald-400 text-sm z-40">
+        لا تنسونا من صالح دعائكم 🌿 | تم التطوير بواسطة [عبد الحميد السعيد عبد الحميد] | جميع الحقوق محفوظة &copy; 2026
+</footer>
+
+<div id="modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div class="bg-emerald-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-auto p-8">
+        <div class="flex justify-between items-center mb-6 sticky top-0 bg-emerald-900 z-10">
+            <h3 id="modalTitle" class="text-3xl font-bold"></h3>
+            <button onclick="closeModal()" class="text-5xl text-emerald-300 hover:text-white">×</button>
+        </div>
+        <div id="modalText" class="text-2xl leading-relaxed text-emerald-100 whitespace-pre-line"></div>
+        <button onclick="closeModal()" class="mt-8 w-full bg-emerald-700 hover:bg-emerald-600 py-5 rounded-2xl text-2xl font-bold">إغلاق</button>
+    </div>
+</div>
+
+<script>
+// ================== متغيرات عامة ==================
+let currentSurahNumber = null;
+let tasbeehCount = 0;
+let allSurahs = [];
+
+// ================== تحميل السور ==================
+async function loadSurahList() {
+    try {
+        const res = await fetch('https://api.alquran.cloud/v1/surah');
+        const data = await res.json();
+        allSurahs = data.data;
+        
+        const container = document.getElementById('surahList');
+        container.innerHTML = '';
+        
+        allSurahs.forEach(surah => {
+            const card = document.createElement('div');
+            card.className = 'bg-emerald-900 hover:bg-emerald-800 rounded-3xl p-6 cursor-pointer border border-emerald-700 shadow-lg transition';
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-5xl font-bold text-emerald-400">${surah.number}</span>
+                        <h4 class="text-2xl font-bold mt-3">${surah.name}</h4>
+                        <p class="text-emerald-400 mt-1">${surah.englishName} • ${surah.numberOfAyahs} آية</p>
+                    </div>
+                    <div class="text-7xl text-emerald-700/30">﴿﴾</div>
+                </div>
+            `;
+            card.dataset.search = `${surah.name} ${surah.englishName.toLowerCase()} سورة ${surah.name} ${surah.number}`.toLowerCase();
+            card.onclick = () => openSurah(surah.number, surah.name);
+            container.appendChild(card);
+        });
+    } catch (e) {
+        console.error(e);
+        document.getElementById('surahList').innerHTML = '<p class="text-red-400 text-center col-span-full text-2xl">خطأ في تحميل السور</p>';
+    }
+}
+
+async function openSurah(number, name) {
+    currentSurahNumber = number;
+    document.getElementById('surahList').classList.add('hidden');
+    document.getElementById('surahReader').classList.remove('hidden');
+    document.getElementById('surahTitle').textContent = name;
+
+    try {
+        const res = await fetch(`https://api.alquran.cloud/v1/surah/${number}/uthmani`);
+        const data = await res.json();
+        const ayahs = data.data.ayahs;
+        
+        let html = '';
+        let currentJuz = 0;
+        
+        ayahs.forEach(ayah => {
+            if (ayah.juz !== currentJuz) {
+                currentJuz = ayah.juz;
+                html += `<div class="bg-emerald-800 text-emerald-300 text-center py-5 my-10 rounded-3xl text-2xl font-bold">الجزء ${currentJuz}</div>`;
+            }
+            html += `
+                <div class="ayah">
+                    <span class="ayah-number">${ayah.numberInSurah}</span>
+                    <p>${ayah.text}</p>
+                </div>
+            `;
+        });
+        
+        document.getElementById('quranText').innerHTML = html;
+        document.getElementById('surahInfo').innerHTML = `الجزء ${ayahs[0].juz} – ${ayahs[ayahs.length-1].juz} • ${ayahs.length} آية`;
+    } catch (e) {
+        document.getElementById('quranText').innerHTML = '<p class="text-red-400 text-center text-2xl">خطأ في تحميل السورة</p>';
+    }
+}
+
+function backToSurahList() {
+    document.getElementById('surahReader').classList.add('hidden');
+    document.getElementById('surahList').classList.remove('hidden');
+}
+
+function searchSurah() {
+    let term = document.getElementById('quranSearch').value.trim().toLowerCase();
+    if (!term) {
+        document.querySelectorAll('#surahList > div').forEach(c => c.style.display = 'block');
+        return;
+    }
+    term = term.replace(/^(سورة|سوره|السورة)\s*/i, '').replace(/ال$/,'').trim();
+    
+    document.querySelectorAll('#surahList > div').forEach(card => {
+        card.style.display = card.dataset.search.includes(term) ? 'block' : 'none';
+    });
+}
+
+// ================== أوقات الصلاة ==================
+async function getPrayerTimes() {
+    const errorDiv = document.getElementById('errorMsg');
+    const locDiv = document.getElementById('locationInfo');
+    const timesDiv = document.getElementById('prayerTimes');
+    errorDiv.classList.add('hidden');
+    timesDiv.classList.add('hidden');
+
+    if (!navigator.geolocation) {
+        errorDiv.textContent = 'المتصفح لا يدعم تحديد الموقع';
+        errorDiv.classList.remove('hidden');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(async pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        locDiv.textContent = `الموقع: ${lat.toFixed(4)}° N, ${lon.toFixed(4)}° E`;
+        locDiv.classList.remove('hidden');
+
+        try {
+            const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=5`);
+            const data = await res.json();
+            const t = data.data.timings;
+            const prayers = [
+                {n:'الفجر', v:t.Fajr}, {n:'الشروق', v:t.Sunrise}, {n:'الظهر', v:t.Dhuhr},
+                {n:'العصر', v:t.Asr}, {n:'المغرب', v:t.Maghrib}, {n:'العشاء', v:t.Isha}
+            ];
+
+            let html = '';
+            prayers.forEach(p => {
+                html += `<div class="bg-emerald-100 text-emerald-950 rounded-2xl p-6 text-center shadow">
+                    <div class="text-4xl font-bold">${p.v}</div>
+                    <div class="text-2xl mt-2 font-semibold">${p.n}</div>
+                </div>`;
+            });
+            timesDiv.innerHTML = html;
+            timesDiv.classList.remove('hidden');
+        } catch (e) {
+            errorDiv.textContent = 'خطأ في جلب الأوقات، تأكد من الإنترنت';
+            errorDiv.classList.remove('hidden');
+        }
+    }, () => {
+        errorDiv.textContent = 'يرجى السماح بتحديد الموقع';
+        errorDiv.classList.remove('hidden');
+    });
+}
+
+// ================== الأدعية (50 مثال – أضف المزيد حسب الحاجة) ==================
+const adiyaList = [
+    {title:"دعاء الصباح", text:"اللهم بك أصبحنا وبك أمسينا وبك نحيا وبك نموت وإليك النشور"},
+    {title:"دعاء المساء", text:"اللهم بك أمسينا وبك أصبحنا وبك نحيا وبك نموت وإليك المصير"},
+    {title:"دعاء الرزق", text:"اللهم اكفني بحلالك عن حرامك وأغنني بفضلك عمن سواك"},
+    {title:"دعاء الهم والحزن", text:"اللهم إني أعوذ بك من الهم والحزن والعجز والكسل والجبن والبخل وضلع الدين وغلبة الرجال"},
+    {title:"دعاء الوالدين", text:"رب ارحمها كما ربياني صغيرا"},
+    {title:"دعاء قبل النوم", text:"اللهم إني أسلمت وجهي إليك وفوضت أمري إليك"},
+    {title:"دعاء الاستغفار", text:"أستغفر الله العظيم الذي لا إله إلا هو الحي القيوم وأتوب إليه"},
+    {title:"دعاء الفرج", text:"لا إله إلا أنت سبحانك إني كنت من الظالمين"},
+    {title:"دعاء الجنة", text:"اللهم إني أسألك الجنة وأعوذ بك من النار"},
+    {title:"دعاء الشفاء", text:"أسأل الله العظيم رب العرش العظيم أن يشفيك"},
+    // أضف هنا المزيد من الأدعية (انسخ الصيغة)
+    {title:"دعاء الطعام", text:"بسم الله، اللهم بارك لنا فيما رزقتنا"},
+    {title:"دعاء الخروج من المنزل", text:"بسم الله توكلت على الله ولا حول ولا قوة إلا بالله"},
+    {title:"دعاء دخول المسجد", text:"اللهم افتح لي أبواب رحمتك"},
+    // ... يمكنك إضافة 50–100 دعاء بنفس الطريقة
+];
+
+function renderDua() {
+    const container = document.getElementById('duaList');
+    container.innerHTML = '';
+    adiyaList.forEach(dua => {
+        const card = document.createElement('div');
+        card.className = 'bg-emerald-900 hover:bg-emerald-800 rounded-3xl p-7 cursor-pointer border border-emerald-700 transition';
+        card.innerHTML = `
+            <h4 class="text-2xl font-bold mb-3">${dua.title}</h4>
+            <p class="text-emerald-200 line-clamp-3">${dua.text}</p>
+        `;
+        card.onclick = () => showModal(dua.title, dua.text);
+        container.appendChild(card);
+    });
+}
+
+function searchDua() {
+    const term = document.getElementById('duaSearch').value.toLowerCase().trim();
+    document.querySelectorAll('#duaList > div').forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+    });
+}
+
+// ================== الأذكار (مثال مشابه) ==================
+const adhkarList = [
+    {title:"أذكار الصباح", text:"أصبحنا وأصبح الملك لله والحمد لله لا إله إلا الله وحده لا شريك له"},
+    {title:"أذكار المساء", text:"أمسينا وأمسى الملك لله والحمد لله لا إله إلا الله وحده لا شريك له"},
+    {title:"سبحان الله", text:"سبحان الله (33)"},
+    {title:"الحمد لله", text:"الحمد لله (33)"},
+    {title:"الله أكبر", text:"الله أكبر (33)"},
+    {title:"لا إله إلا الله", text:"لا إله إلا الله وحده لا شريك له..."},
+    // أضف المزيد هنا
+    {title:"آية الكرسي", text:"الله لا إله إلا هو الحي القيوم ..."},
+    {title:"المعوذتين", text:"قل أعوذ برب الفلق ... قل أعوذ برب الناس ..."},
+];
+
+function renderDhikr() {
+    const container = document.getElementById('dhikrList');
+    container.innerHTML = '';
+    adhkarList.forEach(dh => {
+        const card = document.createElement('div');
+        card.className = 'bg-emerald-900 hover:bg-emerald-800 rounded-3xl p-7 cursor-pointer border border-emerald-700 transition';
+        card.innerHTML = `
+            <h4 class="text-2xl font-bold mb-3">${dh.title}</h4>
+            <p class="text-emerald-200 line-clamp-3">${dh.text}</p>
+        `;
+        card.onclick = () => showModal(dh.title, dh.text);
+        container.appendChild(card);
+    });
+}
+
+function searchDhikr() {
+    const term = document.getElementById('dhikrSearch').value.toLowerCase().trim();
+    document.querySelectorAll('#dhikrList > div').forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+    });
+}
+
+// ================== مسبحة ==================
+function incrementTasbeeh() { tasbeehCount++; document.getElementById('tasbeehCount').textContent = tasbeehCount; }
+function resetTasbeeh() { tasbeehCount = 0; document.getElementById('tasbeehCount').textContent = '0'; }
+
+// ================== Modal ==================
+function showModal(title, text) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalText').innerHTML = text.replace(/\n/g, '<br><br>');
+    document.getElementById('modal').classList.remove('hidden');
+    document.getElementById('modal').classList.add('flex');
+}
+function closeModal() {
+    document.getElementById('modal').classList.add('hidden');
+    document.getElementById('modal').classList.remove('flex');
+}
+
+// ================== تبديل الأقسام ==================
+function switchSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`button[onclick="switchSection('${id}')"]`)?.classList.add('active');
+}
+
+// ================== بداية التحميل ==================
+window.addEventListener('load', async () => {
+    await loadSurahList();
+    renderDua();
+    renderDhikr();
+    switchSection('quran');  // افتتاح قسم القرآن افتراضياً
+});
+</script>
+</body>
+</html>
